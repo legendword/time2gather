@@ -1,38 +1,32 @@
 import * as React from "react"
 import {
-  ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
+    ChakraProvider,
+    Box,
+    Text,
+    Link,
+    VStack,
+    Code,
+    Grid,
+    theme,
+    Heading,
 } from "@chakra-ui/react"
 import { ColorModeSwitcher } from "./ColorModeSwitcher"
 import { Logo } from "./Logo"
+import { Routes, Route, Link as RouterLink } from "react-router-dom"
+import { Landing } from "./pages/Landing"
+import { Event } from "./pages/Event"
+import { Header } from "./Header"
+import { NewEvent } from './pages/NewEvent'
 
 export const App = () => (
-  <ChakraProvider theme={theme}>
-    <Box textAlign="center" fontSize="xl">
-      <Grid minH="100vh" p={3}>
-        <ColorModeSwitcher justifySelf="flex-end" />
-        <VStack spacing={8}>
-          <Logo h="40vmin" pointerEvents="none" />
-          <Text>
-            Edit <Code fontSize="xl">src/App.tsx</Code> and save to reload.
-          </Text>
-          <Link
-            color="teal.500"
-            href="https://chakra-ui.com"
-            fontSize="2xl"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn Chakra
-          </Link>
-        </VStack>
-      </Grid>
-    </Box>
-  </ChakraProvider>
+    <ChakraProvider theme={theme}>
+        <Routes>
+            <Route path="/" element={<Landing />}></Route>
+            <Route path="new" element={<NewEvent />}></Route>
+            <Route element={<Header />}>
+                <Route path="about"></Route>
+                <Route path=":id" element={<Event />}></Route>
+            </Route>
+        </Routes>
+    </ChakraProvider>
 )
