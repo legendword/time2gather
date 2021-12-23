@@ -8,7 +8,7 @@ interface Day {
     day: number
 }
 
-export class DatePicker extends React.Component<{ id?: string }, { days: Array<Day>, week: Array<string>, selected: Array<string>, title: string}> {
+export class DatePicker extends React.Component<{ selected: Array<string>,  onUpdate: (val: Array<string>) => void }, { days: Array<Day>, week: Array<string>, title: string}> {
     today: string = moment().format('YYYY-MM-DD')
 
     constructor(props: any) {
@@ -16,15 +16,13 @@ export class DatePicker extends React.Component<{ id?: string }, { days: Array<D
         this.state = {
             days: [],
             week: [],
-            selected: [],
             title: ''
         }
     }
 
     render() {
         return (
-            <VStack spacing={6} {...this.props}>
-                
+            <VStack spacing={6}>
                 <Grid templateColumns="repeat(7, 1fr)" gap={6}>
                     <GridItem colSpan={7}>
                         <Flex justifyContent="space-between" alignItems="center" w="100%">
@@ -43,7 +41,7 @@ export class DatePicker extends React.Component<{ id?: string }, { days: Array<D
                         <Box key={ind} fontSize="md" textColor="teal.600" fontWeight="bold">{v}</Box>
                     ))}
                     {this.state.days.map((v, ind) => (
-                        <Button colorScheme="teal" variant={this.state.selected.includes(v.date) ? 'solid' : 'outline'} onClick={() => this.clickDate(v.date)} key={ind} textDecoration={v.date == this.today ? 'underline' : 'none'}>{v.day}</Button>
+                        <Button colorScheme="teal" variant={this.props.selected.includes(v.date) ? 'solid' : 'outline'} onClick={() => this.clickDate(v.date)} key={ind} textDecoration={v.date == this.today ? 'underline' : 'none'}>{v.day}</Button>
                     ))}
                 </Grid>
             </VStack>
@@ -51,16 +49,12 @@ export class DatePicker extends React.Component<{ id?: string }, { days: Array<D
     }
 
     clickDate(date: string) {
-        let i = this.state.selected.indexOf(date)
+        let i = this.props.selected.indexOf(date)
         if (i != -1) {
-            this.setState((state) => {
-                return {selected: state.selected.filter(v => v != date)}
-            })
+            this.props.onUpdate(this.props.selected.filter(v => v != date))
         }
         else {
-            this.setState((state) => {
-                return {selected: [...state.selected, date]}
-            })
+            this.props.onUpdate([...this.props.selected, date])
         }
     }
 

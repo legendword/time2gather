@@ -6,17 +6,23 @@ import {
   Heading,
   Button,
   Flex,
+  Link,
+  HStack,
+  useColorModeValue,
 } from "@chakra-ui/react"
 import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { Link, Outlet } from "react-router-dom"
+import { Link as RouterLink, Outlet } from "react-router-dom"
 
 export const Header = () => (
     <Box>
-        <Flex justifyContent="space-between" alignItems="center" p={4}>
-            <Text fontWeight="bold" fontSize="xl" colorScheme="teal">time2gather</Text>
+        <Flex justifyContent="space-between" alignItems="center" px={4} py={3} borderBottom={"1px solid "+useColorModeValue("var(--chakra-colors-gray-300)", "var(--chakra-colors-gray-600)")}>
+            <HStack spacing="24px">
+                <Text as={RouterLink} to="/about" fontWeight="bold" className="primary-link-style" fontSize="lg">time2gather</Text>
+                <Button as={RouterLink} to="/" colorScheme="teal" variant="outline" size="sm">Plan New Meeting</Button>
+            </HStack>
+            
             <Box>
-                <Button as={Link} to="/new" colorScheme="teal" variant="outline">Plan New Meeting</Button>
-                <ColorModeSwitcher />
+                <ColorModeSwitcher size="sm" fontSize="md" />
             </Box>
         </Flex>
         <Outlet />
