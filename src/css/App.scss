@@ -5,3 +5,11 @@
         text-decoration: none;
     }
 }
+
+.box-shade {
+    height: 10px;
+    border: 1px solid var(--chakra-colors-gray-500);
+}
+.box-double {
+    height: 20px;
+}

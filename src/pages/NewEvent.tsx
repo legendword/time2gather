@@ -17,6 +17,7 @@ import {
 import axios from "axios"
 import { DatePicker } from "../components/DatePicker"
 import { useNavigate } from "react-router-dom"
+import { baseURL } from "../util/config"
 
 export class NewEvent extends React.Component<any, { title: string, dates: Array<string> }> {
     constructor(props: any) {
@@ -56,7 +57,7 @@ export class NewEvent extends React.Component<any, { title: string, dates: Array
         
         axios({
             method: 'post',
-            url: 'http://localhost:8000/',
+            url: `${baseURL}/`,
             data: {
                 title: this.state.title,
                 dates: this.state.dates.sort()
@@ -66,7 +67,7 @@ export class NewEvent extends React.Component<any, { title: string, dates: Array
             console.log(r)
             if (r.success) {
                 let navigate = useNavigate()
-                navigate(`/${r.code}`)
+                navigate(`/${r.eventId}`)
             }
             else {
                 // #todo: error handling
