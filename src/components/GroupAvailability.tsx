@@ -5,7 +5,7 @@ import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
 
 
-export const GroupAvailability = (props: { event: EventObject }) => {
+export const GroupAvailability = (props: { event: EventObject, onClick: (time: string) => void }) => {
 
     const getDate = (date: string) => {
         return moment(date, 'YYYY-MM-DD').format('MMM D')
@@ -30,11 +30,12 @@ export const GroupAvailability = (props: { event: EventObject }) => {
     }
 
     const attendeeCount = props.event.data.length;
-    const colors = interpolateColors("rgb(255, 255, 255)", "rgb(28, 69, 50)", attendeeCount).map((v) => `rgb(${v.join(',')})`);
+    const colors = interpolateColors("rgb(255, 255, 255)", "rgb(28, 69, 50)", attendeeCount + 1).map((v) => `rgb(${v.join(',')})`);
     const getColor = (timeStr: string) => {
         let colorLevel = availabilityMap[timeStr] == null ? 0 : availabilityMap[timeStr].length;
         return colors[colorLevel];
     }
+    // deprecated: used for tooltip label
     const getLabel = (timeStr: string, ind: number) => {
         let available = availabilityMap[timeStr] == null ? [] : availabilityMap[timeStr];
         let unavailable = props.event.data.map(v => v.name).filter(v => !available.includes(v))
@@ -65,12 +66,8 @@ export const GroupAvailability = (props: { event: EventObject }) => {
                             <Flex direction="column" minH="50vh">
                                 {
                                     timeStops.map((t, ind) => (
-                                        <Tooltip hasArrow placement="right" label={getLabel(`${v} ${t}`, ind)} key={ind}>
-                                            <Box backgroundColor={getColor(`${v} ${t}`)} className="box-shade">
-                                                {getColor(`${v} ${t}`)}
-                                            </Box>
-                                        </Tooltip>
-                                        
+                                        <Box key={ind} backgroundColor={getColor(`${v} ${t}`)} className="box-shade" onClick={() => props.onClick(`${v} ${t}`)}>
+                                        </Box>
                                     ))
                                 }
                             </Flex>

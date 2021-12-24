@@ -1,11 +1,21 @@
-import { Box, Flex, HStack, Text, Tooltip } from "@chakra-ui/react"
+import { Box, Button, Center, Flex, HStack, Text, Tooltip } from "@chakra-ui/react"
 import moment from "moment"
+import { useEffect, useState } from "react"
 import { EventObject } from "../pages/Event"
 import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
 
 
-export const MyAvailability = (props: { dates: Array<string>, available: Array<string>, mouseOver: (ev: any, time: string) => void }) => {
+export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string>, available: Array<string>, onSubmitEdit: (available: Array<string>) => void }) => {
+    const enableDrafts = props.allowEdits || props.available.length == 0;
+    const [draftAvailable, setDraftAvailable] = useState<Array<string>>(props.available);
+    const [draftTimes, setDraftTimes] = useState<Array<string>>([]);
+    const [draftMode, setDraftMode] = useState<boolean>(false); // true: toggle on, false: toggle off
+    const [hasEdited, setHasEdited] = useState<boolean>(false);
+
+    useEffect(() => {
+        setHasEdited(false)
+    }, [props.available])
 
     const getDate = (date: string) => {
         return moment(date, 'YYYY-MM-DD').format('MMM D')
@@ -23,8 +33,51 @@ export const MyAvailability = (props: { dates: Array<string>, available: Array<s
     }
 
     const getColor = (timeStr: string) => {
-        if (props.available.includes(timeStr)) return 'green.800';
-        else return ''
+        if (draftTimes.includes(timeStr)) return (draftMode ? 'green.600' : '');
+        if (draftAvailable.includes(timeStr)) return 'green.800';
+        return '';
+    }
+
+    const draftSelect = (time: string) => {
+        if (draftTimes.includes(time)) {
+            setDraftTimes(draftTimes.filter(v => v != time))
+        }
+        else {
+            setDraftTimes([...draftTimes, time])
+        }
+    }
+
+    const mouseDown = (time: string) => {
+        if (!enableDrafts) return;
+        setDraftMode(!draftAvailable.includes(time));
+        setDraftTimes([time]);
+    }
+
+    const mouseOver = (ev: any, time: string) => {
+        if ([1, 3, 5].includes(ev.buttons)) {
+            ev.preventDefault();
+            if (!enableDrafts) return;
+            draftSelect(time);
+        }
+    }
+
+    const mouseUp = () => {
+        if (!enableDrafts) return;
+        if (draftTimes.length !== 0) {
+            toggleAvailable(draftTimes, draftMode);
+            setDraftTimes([]);
+        }
+    }
+
+    const toggleAvailable = (times: Array<string>, mode: boolean) => {
+        const newAvailable = (mode ? [...draftAvailable, ...times.filter(v => !draftAvailable.includes(v))] : draftAvailable.filter(v => !times.includes(v)));
+        setDraftAvailable(newAvailable);
+        setHasEdited(true);
+    }
+
+    const saveChanges = () => {
+        if (!enableDrafts || !hasEdited) return;
+        props.onSubmitEdit(draftAvailable);
     }
 
     return (
@@ -49,7 +102,7 @@ export const MyAvailability = (props: { dates: Array<string>, available: Array<s
                             <Flex direction="column" minH="50vh">
                                 {
                                     timeStops.map((t, ind) => (
-                                        <Box bg={getColor(`${v} ${t}`)} className="box-shade" key={ind} onMouseOver={(ev) => props.mouseOver(ev, `${v} ${t}`)}>
+                                        <Box bg={getColor(`${v} ${t}`)} className="box-shade" key={ind} onMouseOver={(ev) => mouseOver(ev, `${v} ${t}`)} onMouseDown={() => mouseDown(`${v} ${t}`)} onMouseUp={() => mouseUp()}>
                                         </Box>
                                     ))
                                 }
@@ -61,6 +114,15 @@ export const MyAvailability = (props: { dates: Array<string>, available: Array<s
 
                 </Box>
             </Flex>
+            <Center mt={5}>
+            {
+                (enableDrafts && hasEdited) ? (
+                    <Button onClick={saveChanges}>Save</Button>
+                ) : (
+                    <Button isDisabled>Saved</Button>
+                )
+            }
+            </Center>
         </Box>
     )
 }

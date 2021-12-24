@@ -12,12 +12,16 @@ function interpolateColor(color1: Array<number>, color2: Array<number>, factor: 
     return result;
 }
 // My function to interpolate between two colors completely, returning an array
-function interpolateColors(color1: any, color2: any, steps: number) {
+function interpolateColors(color1str: string, color2str: string, steps: number) {
     var stepFactor = 1 / (steps - 1),
         interpolatedColorArray = [];
 
-    color1 = color1.match(/\d+/g).map(Number);
-    color2 = color2.match(/\d+/g).map(Number);
+    let color1 = color1str.match(/\d+/g)!.map(Number);
+    let color2 = color2str.match(/\d+/g)!.map(Number);
+
+    if (steps == 1) {
+        return [color1];
+    }
 
     for(var i = 0; i < steps; i++) {
         interpolatedColorArray.push(interpolateColor(color1, color2, stepFactor * i));

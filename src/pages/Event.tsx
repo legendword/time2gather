@@ -12,30 +12,53 @@ import {
   Button,
   Flex,
   Spinner,
+  Center,
 } from "@chakra-ui/react"
 import { Link as RouterLink, useParams } from "react-router-dom"
 import axios from "axios"
 import { baseURL } from "../util/config"
 import { GroupAvailability } from "../components/GroupAvailability"
 import { MyAvailability } from "../components/MyAvailability"
+import { GroupInformation } from "../components/GroupInformation"
+import { NameModal } from "../components/NameModal"
+import { ErrorDialog } from "../components/ErrorDialog"
 
 export interface EventObject {
     title: string,
     dates: Array<string>,
-    data: Array<{ name: string, available: Array<string>}>
+    data: Array<{ name: string, available: Array<string>}>,
+    allowEdits: boolean
+}
+
+export interface GroupInformationObject {
+    show: boolean,
+    time: string | null,
+    // available: Array<string>,
+    // unavailable: Array<string>
 }
 
 export const Event = () => {
     const params = useParams();
 
-    const [loading, setLoading] = React.useState(true);
+    const [showErrorDialog, setShowErrorDialog] = React.useState(false);
+    const [errorCode, setErrorCode] = React.useState<string | null>(null);
 
-    const [state, setState] = React.useState<{ success: Boolean, event: EventObject, errorInfo?: Object }>({
+    const [loading, setLoading] = React.useState(true);
+    const [groupInformation, setGroupInformation] = React.useState<GroupInformationObject>({
+        show: false,
+        time: null
+    });
+    
+    let storedName = localStorage.getItem(`time2gather-storedName-${params.id}`);
+    const [name, setName] = React.useState(storedName);
+
+    const [state, setState] = React.useState<{ success: Boolean, event: EventObject }>({
         success: true,
         event: {
             title: '',
             dates: [],
-            data: []
+            data: [],
+            allowEdits: false
         }
     });
 
@@ -52,17 +75,29 @@ export const Event = () => {
                     success: true,
                     event: r.event
                 })
+                if (name) {
+                    let attendee = r.event.data.find((v: any) => v.name == name);
+                    if (attendee) {
+                        setAvailable(attendee.available)
+                    }
+                }
             }
             else {
-                setState({
-                    success: false,
-                    errorInfo: r,
-                    event: {
-                        title: '',
-                        dates: [],
-                        data: []
-                    }
-                })
+                if (r.errorCode == 'NOT_FOUND') {
+                    setState({
+                        success: false,
+                        event: {
+                            title: '',
+                            dates: [],
+                            data: [],
+                            allowEdits: false
+                        }
+                    })
+                }
+                else {
+                    setErrorCode(r.errorCode)
+                    setShowErrorDialog(true)
+                }
             }
             setLoading(false);
         })
@@ -89,27 +124,50 @@ export const Event = () => {
             }
         }
         */
-    const mouseOverMine = (ev: any, time: string) => {
-        console.log(ev.buttons)
-        if ([1, 3, 5].includes(ev.buttons)) {
-            if (available.includes(time)) {
-                setAvailable(available.filter(v => v != time))
+    const submitAvailabilityEdit = (newAvailable: Array<string>) => {
+        axios({
+            method: 'post',
+            url: `${baseURL}/${params.id}`,
+            data: {
+                name: name,
+                available: newAvailable
+            }
+        }).then(res => {
+            let r = res.data;
+            console.log(r);
+            if (r.success) {
+                setState({
+                    success: true,
+                    event: r.event
+                });
             }
             else {
-                setAvailable([...available, time])
+                setErrorCode(r.errorCode)
+                setShowErrorDialog(true)
             }
-            ev.preventDefault()
+        })
+    }
+
+    const submitName = (name: string, save: boolean) => {
+        console.log(name, save)
+        if (save) {
+            localStorage.setItem(`time2gather-storedName-${params.id}`, name)
         }
+        let attendee = state.event.data.find(v => v.name == name);
+        if (attendee) {
+            setAvailable(attendee.available)
+        }
+        setName(name)
     }
     
     return (
         <Box my="5vh">
             {
                 loading ? (
-                    <Flex h="80vh" flexDirection="column" justifyContent="center" alignItems="center">
+                    <Flex h="40vh" flexDirection="column" justifyContent="center" alignItems="center">
                         <Spinner color="teal.600" size="xl" thickness="3px" />
                     </Flex>
-                ) : (<Box></Box>)
+                ) : (<></>)
             }
             {
                 (!loading && state.success) ? (
@@ -117,19 +175,41 @@ export const Event = () => {
                         <Heading textAlign="center" as="h1" size="xl" mb="5vh">{state.event.title}</Heading>
                         <Flex>
                             <Box w="50vw">
-                                <Heading textAlign="center" size="md" mb="3">Group Availability</Heading>
-                                <GroupAvailability event={state.event} />
+                                <Heading textAlign="center" size="md" mb="5">Group Availability</Heading>
+                                <GroupAvailability event={state.event} onClick={(time) => setGroupInformation({ show: !(groupInformation.time != null && groupInformation.time == time), time: time })} />
                             </Box>
-                            <Box w="50vw">
-                                <Heading textAlign="center" size="md" mb="3">Your Availability</Heading>
-                                <MyAvailability dates={state.event.dates} available={available} mouseOver={(ev, time) => mouseOverMine(ev, time)} />
-                            </Box>
+                            {
+                                (name == null || groupInformation.show) ? (
+                                    <Box w="50vw">
+                                        <Heading textAlign="center" size="md" mb="5">Group Information</Heading>
+                                        <GroupInformation info={groupInformation} event={state.event} />
+                                        <Center mt={5}>
+                                            {
+                                                name == null ? (
+                                                    <NameModal submitName={submitName} />
+                                                ) : (
+                                                    <></>
+                                                )
+                                            }
+                                        </Center>
+                                    </Box>
+                                ) : (
+                                    <Box w="50vw">
+                                        <Heading textAlign="center" size="md" mb="5">Your Availability</Heading>
+                                        <MyAvailability allowEdits={state.event.allowEdits} dates={state.event.dates} available={available} onSubmitEdit={(val) => submitAvailabilityEdit(val)} />
+                                    </Box>
+                                )
+                            }
                         </Flex>
                     </Box>
-                ) : (
-                    <Text textAlign="center">Event not found...</Text>
-                )
+                ) : (<></>)
             }
+            {
+                (!loading && !state.success) ? (
+                    <Text textAlign="center">Event not found...</Text>
+                ) : (<></>)
+            }
+            <ErrorDialog errorCode={errorCode} isOpen={showErrorDialog} setIsOpen={setShowErrorDialog} />
         </Box>
     )
 }
