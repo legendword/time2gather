@@ -5,7 +5,7 @@ import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
 
 
-export const GroupAvailability = (props: { event: EventObject, onClick: (time: string) => void }) => {
+export const GroupAvailability = (props: { event: EventObject, onMouseEnter: (time: string, timeRange: string) => void, onMouseLeave: (time: string) => void }) => {
 
     const getDate = (date: string) => {
         return moment(date, 'YYYY-MM-DD').format('MMM D')
@@ -35,6 +35,9 @@ export const GroupAvailability = (props: { event: EventObject, onClick: (time: s
         let colorLevel = availabilityMap[timeStr] == null ? 0 : availabilityMap[timeStr].length;
         return colors[colorLevel];
     }
+    const getTimeRangeStr = (time: string, ind: number) => {
+        return `${time} - ${timeEnds[ind]}`
+    }
     // deprecated: used for tooltip label
     const getLabel = (timeStr: string, ind: number) => {
         let available = availabilityMap[timeStr] == null ? [] : availabilityMap[timeStr];
@@ -42,7 +45,7 @@ export const GroupAvailability = (props: { event: EventObject, onClick: (time: s
         return `${timeStr} - ${timeEnds[ind]} [Available: ${available.join(', ')}] [Unavailable: ${unavailable.join(', ')}]`
     }
 
-    console.log(colors, availabilityMap)
+    // console.log(colors, availabilityMap)
 
     return (
         <Box>
@@ -66,7 +69,7 @@ export const GroupAvailability = (props: { event: EventObject, onClick: (time: s
                             <Flex direction="column" minH="50vh">
                                 {
                                     timeStops.map((t, ind) => (
-                                        <Box key={ind} backgroundColor={getColor(`${v} ${t}`)} className="box-shade" onClick={() => props.onClick(`${v} ${t}`)}>
+                                        <Box key={ind} backgroundColor={getColor(`${v} ${t}`)} className="box-shade" onMouseEnter={() => props.onMouseEnter(`${v} ${t}`, getTimeRangeStr(`${v} ${t}`, ind))} onMouseLeave={() => props.onMouseLeave(`${v} ${t}`)}>
                                         </Box>
                                     ))
                                 }
@@ -78,6 +81,7 @@ export const GroupAvailability = (props: { event: EventObject, onClick: (time: s
 
                 </Box>
             </Flex>
+            <Box h="20"></Box>
         </Box>
     )
 }

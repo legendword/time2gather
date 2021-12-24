@@ -33,6 +33,7 @@ export interface EventObject {
 export interface GroupInformationObject {
     show: boolean,
     time: string | null,
+    timeRange: string | null
     // available: Array<string>,
     // unavailable: Array<string>
 }
@@ -46,7 +47,8 @@ export const Event = () => {
     const [loading, setLoading] = React.useState(true);
     const [groupInformation, setGroupInformation] = React.useState<GroupInformationObject>({
         show: false,
-        time: null
+        time: null,
+        timeRange: null
     });
     
     let storedName = localStorage.getItem(`time2gather-storedName-${params.id}`);
@@ -140,6 +142,7 @@ export const Event = () => {
                     success: true,
                     event: r.event
                 });
+                setAvailable(r.event.data.find((v: any) => v.name == name).available)
             }
             else {
                 setErrorCode(r.errorCode)
@@ -176,7 +179,7 @@ export const Event = () => {
                         <Flex>
                             <Box w="50vw">
                                 <Heading textAlign="center" size="md" mb="5">Group Availability</Heading>
-                                <GroupAvailability event={state.event} onClick={(time) => setGroupInformation({ show: !(groupInformation.time != null && groupInformation.time == time), time: time })} />
+                                <GroupAvailability event={state.event} onMouseEnter={(time, timeRange) => setGroupInformation({ show: true, time, timeRange })} onMouseLeave={(time) => (groupInformation.time == time ? setGroupInformation({ show: false, time: null, timeRange: null}) : null)} />
                             </Box>
                             {
                                 (name == null || groupInformation.show) ? (
@@ -195,7 +198,7 @@ export const Event = () => {
                                     </Box>
                                 ) : (
                                     <Box w="50vw">
-                                        <Heading textAlign="center" size="md" mb="5">Your Availability</Heading>
+                                        <Heading textAlign="center" size="md" mb="5">{name}'s Availability</Heading>
                                         <MyAvailability allowEdits={state.event.allowEdits} dates={state.event.dates} available={available} onSubmitEdit={(val) => submitAvailabilityEdit(val)} />
                                     </Box>
                                 )
