@@ -1,4 +1,4 @@
-import { Badge, Box, Center, Flex, HStack, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
+import { Badge, Center, Flex, Text, VStack } from "@chakra-ui/react";
 import { EventObject, GroupInformationObject } from "../pages/Event";
 
 export const GroupInformation = (props: { info: GroupInformationObject, event: EventObject }) => {

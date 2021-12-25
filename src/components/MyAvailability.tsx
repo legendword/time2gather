@@ -1,8 +1,6 @@
-import { Box, Button, Center, Flex, HStack, Text, Tooltip } from "@chakra-ui/react"
+import { Box, Button, Center, Flex, Text } from "@chakra-ui/react"
 import moment from "moment"
 import { useEffect, useState } from "react"
-import { EventObject } from "../pages/Event"
-import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
 
 

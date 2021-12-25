@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Text, Tooltip } from "@chakra-ui/react"
+import { Box, Flex, Text } from "@chakra-ui/react"
 import moment from "moment"
 import { useEffect, useRef, useState } from "react"
 import { EventObject } from "../pages/Event"
@@ -44,11 +44,13 @@ export const GroupAvailability = (props: { event: EventObject, onMouseEnter: (ti
         return `${time} - ${timeEnds[ind]}`
     }
     // deprecated: used for tooltip label
+    /*
     const getLabel = (timeStr: string, ind: number) => {
         let available = availabilityMap[timeStr] == null ? [] : availabilityMap[timeStr];
         let unavailable = props.event.data.map(v => v.name).filter(v => !available.includes(v))
         return `${timeStr} - ${timeEnds[ind]} [Available: ${available.join(', ')}] [Unavailable: ${unavailable.join(', ')}]`
     }
+    */
 
     // console.log(colors, availabilityMap)
 

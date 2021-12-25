@@ -19,7 +19,7 @@ function interpolateColors(color1str: string, color2str: string, steps: number) 
     let color1 = color1str.match(/\d+/g)!.map(Number);
     let color2 = color2str.match(/\d+/g)!.map(Number);
 
-    if (steps == 1) {
+    if (steps === 1) {
         return [color1];
     }
 

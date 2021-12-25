@@ -1,12 +1,9 @@
 import * as React from "react"
 import {
-  ChakraProvider,
   Box,
   Text,
   VStack,
-  Code,
   Grid,
-  theme,
   Heading,
   Button,
 } from "@chakra-ui/react"

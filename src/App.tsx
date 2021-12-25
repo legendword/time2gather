@@ -1,18 +1,8 @@
-import * as React from "react"
 import {
     ChakraProvider,
-    Box,
-    Text,
-    Link,
-    VStack,
-    Code,
-    Grid,
     theme,
-    Heading,
 } from "@chakra-ui/react"
-import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { Logo } from "./Logo"
-import { Routes, Route, Link as RouterLink } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import { Landing } from "./pages/Landing"
 import { Event } from "./pages/Event"
 import { Header } from "./Header"

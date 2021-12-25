@@ -1,20 +1,13 @@
 import * as React from "react"
 import {
-  ChakraProvider,
   Box,
   Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
   Heading,
-  Button,
   Flex,
   Spinner,
   Center,
 } from "@chakra-ui/react"
-import { Link as RouterLink, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import axios from "axios"
 import { baseURL } from "../util/config"
 import { GroupAvailability } from "../components/GroupAvailability"
@@ -75,6 +68,7 @@ export const Event = () => {
         }).then(res => {
             let r = res.data;
             if (r.success) {
+                document.title = `${r.event.title} - time2gather`;
                 setState({
                     success: true,
                     event: r.event

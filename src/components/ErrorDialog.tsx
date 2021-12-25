@@ -1,5 +1,5 @@
 import { AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button } from "@chakra-ui/react"
-import { useRef, useState } from "react"
+import { useRef } from "react"
 
 const errorTypes: { [key: string]: { title: string, message: string }} = {
     'ARGUMENT_ERROR': {

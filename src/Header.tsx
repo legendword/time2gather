@@ -1,12 +1,8 @@
-import * as React from "react"
 import {
-  ChakraProvider,
   Box,
   Text,
-  Heading,
   Button,
   Flex,
-  Link,
   HStack,
   useColorModeValue,
 } from "@chakra-ui/react"
