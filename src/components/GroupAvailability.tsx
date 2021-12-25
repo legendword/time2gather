@@ -81,7 +81,7 @@ export const GroupAvailability = (props: { event: EventObject, onMouseEnter: (ti
                 <Flex justify={overflown ? "unset" : "center"} gap="10px">
                     <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"}>
                         <Text visibility="hidden" h="14">Time Slots</Text>
-                        <Flex mt="-3" direction="column">
+                        <Flex mt="-2" direction="column">
                             {
                                 timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
                                     <Box className="box-double" fontSize="10px" key={ind}>

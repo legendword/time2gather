@@ -1,7 +1,8 @@
 import { Box, Button, Center, Flex, Text } from "@chakra-ui/react"
 import moment from "moment"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import leadingZeros from "../util/leadingZeros"
+import { isOverflown } from "../util/overflow"
 
 
 export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string>, times: Array<number>, available: Array<string>, onSubmitEdit: (available: Array<string>) => void }) => {
@@ -81,13 +82,32 @@ export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string
         props.onSubmitEdit(draftAvailable);
     }
 
+    // synced with GroupAvailability.tsx
+    const overflowRef = useRef(null);
+    const [overflown, setOverflown] = useState(false);
+
+    const calculateOverflow = () => {
+        const element = overflowRef.current;
+        const iof = isOverflown(element)
+        // console.log('resize', overflown, iof)
+        setOverflown(iof)
+    }
+
+    useEffect(() => {
+        window.addEventListener("resize", calculateOverflow);
+
+        calculateOverflow()
+
+        return () => window.removeEventListener("resize", calculateOverflow);
+    }, [overflown])
+
     return (
         <Box>
-            <Box w="100%" overflowX="auto">
-                <Flex gap="10px">
-                    <Box textAlign="center" minW="10" m="auto">
+            <Box w="100%" overflowX="auto" ref={overflowRef}>
+                <Flex justify={overflown ? "unset" : "center"} gap="10px">
+                    <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"}>
                         <Text visibility="hidden" h="14">Time Slots</Text>
-                        <Flex mt="-3" direction="column">
+                        <Flex mt="-2" direction="column">
                             {
                                 timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
                                     <Box className="box-double" fontSize="10px" key={ind}>
@@ -99,7 +119,7 @@ export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string
                     </Box>
                     {
                         props.dates.map(v => (
-                            <Box textAlign="center" minW="10" m="auto" key={v}>
+                            <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"} key={v}>
                                 <Box h="14">
                                     <Text>{getDateMonth(v)}</Text>
                                     <Text>{getDateDay(v)}</Text>
@@ -115,7 +135,7 @@ export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string
                             </Box>
                         ))
                     }
-                    <Box textAlign="center" minW="10" m="auto">
+                    <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"}>
                     </Box>
                 </Flex>
             </Box>
