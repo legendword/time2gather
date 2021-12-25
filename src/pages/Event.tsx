@@ -26,6 +26,7 @@ import { ErrorDialog } from "../components/ErrorDialog"
 export interface EventObject {
     title: string,
     dates: Array<string>,
+    times: Array<number>,
     data: Array<{ name: string, available: Array<string>}>,
     allowEdits: boolean
 }
@@ -59,6 +60,7 @@ export const Event = () => {
         event: {
             title: '',
             dates: [],
+            times: [0, 24],
             data: [],
             allowEdits: false
         }
@@ -91,6 +93,7 @@ export const Event = () => {
                         event: {
                             title: '',
                             dates: [],
+                            times: [0, 24],
                             data: [],
                             allowEdits: false
                         }
@@ -176,30 +179,24 @@ export const Event = () => {
                 (!loading && state.success) ? (
                     <Box>
                         <Heading textAlign="center" as="h1" size="xl" mb="5vh">{state.event.title}</Heading>
-                        <Flex>
-                            <Box w="50vw">
+                        <Flex wrap="wrap">
+                            <Box w={["100vw", "50vw"]} px={[2, 4]}>
                                 <Heading textAlign="center" size="md" mb="5">Group Availability</Heading>
                                 <GroupAvailability event={state.event} onMouseEnter={(time, timeRange) => setGroupInformation({ show: true, time, timeRange })} onMouseLeave={(time) => (groupInformation.time == time ? setGroupInformation({ show: false, time: null, timeRange: null}) : null)} />
                             </Box>
                             {
                                 (name == null || groupInformation.show) ? (
-                                    <Box w="50vw">
+                                    <Box w={["100vw", "50vw"]} px={[2, 4]}>
                                         <Heading textAlign="center" size="md" mb="5">Group Information</Heading>
-                                        <GroupInformation info={groupInformation} event={state.event} />
-                                        <Center mt={5}>
-                                            {
-                                                name == null ? (
-                                                    <NameModal submitName={submitName} />
-                                                ) : (
-                                                    <></>
-                                                )
-                                            }
+                                        <Center mb={5} visibility={name == null ? 'visible' : 'hidden'}>
+                                            <NameModal submitName={submitName} />
                                         </Center>
+                                        <GroupInformation info={groupInformation} event={state.event} />
                                     </Box>
                                 ) : (
-                                    <Box w="50vw">
+                                    <Box w={["100vw", "50vw"]} px={[2, 4]}>
                                         <Heading textAlign="center" size="md" mb="5">{name}'s Availability</Heading>
-                                        <MyAvailability allowEdits={state.event.allowEdits} dates={state.event.dates} available={available} onSubmitEdit={(val) => submitAvailabilityEdit(val)} />
+                                        <MyAvailability allowEdits={state.event.allowEdits} dates={state.event.dates} times={state.event.times} available={available} onSubmitEdit={(val) => submitAvailabilityEdit(val)} />
                                     </Box>
                                 )
                             }

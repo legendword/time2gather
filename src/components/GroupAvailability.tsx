@@ -1,19 +1,24 @@
 import { Box, Flex, HStack, Text, Tooltip } from "@chakra-ui/react"
 import moment from "moment"
+import { useEffect, useRef, useState } from "react"
 import { EventObject } from "../pages/Event"
 import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
+import { isOverflown } from "../util/overflow"
 
 
 export const GroupAvailability = (props: { event: EventObject, onMouseEnter: (time: string, timeRange: string) => void, onMouseLeave: (time: string) => void }) => {
 
-    const getDate = (date: string) => {
-        return moment(date, 'YYYY-MM-DD').format('MMM D')
+    const getDateMonth = (date: string) => {
+        return moment(date, 'YYYY-MM-DD').format('MMM')
+    }
+    const getDateDay = (date: string) => {
+        return moment(date, 'YYYY-MM-DD').format('D')
     }
     const intervalHours = 0, intervalMinutes = 30;
     const timeStops: Array<string> = [];
     const timeEnds: Array<string> = [];
-    for (let i = 0; i < 24; i += intervalHours + 1) {
+    for (let i = props.event.times[0]; i < props.event.times[1]; i += intervalHours + 1) {
         for (let j = 0; j < 60; j += intervalMinutes) {
             let beginTime = `${leadingZeros(i)}:${leadingZeros(j)}`;
             let endTime = `${leadingZeros(i)}:${leadingZeros(j+intervalMinutes-1)}`;
@@ -47,40 +52,66 @@ export const GroupAvailability = (props: { event: EventObject, onMouseEnter: (ti
 
     // console.log(colors, availabilityMap)
 
+
+    // workaround for inaccessible areas when flexbox with (justify-content: center) has overflow; see https://stackoverflow.com/questions/33454533/cant-scroll-to-top-of-flex-item-that-is-overflowing-container
+    const overflowRef = useRef(null);
+    const [overflown, setOverflown] = useState(false);
+
+    const calculateOverflow = () => {
+        const element = overflowRef.current;
+        const iof = isOverflown(element)
+        // console.log('resize', overflown, iof)
+        setOverflown(iof)
+    }
+
+    useEffect(() => {
+        window.addEventListener("resize", calculateOverflow);
+
+        calculateOverflow()
+
+        return () => window.removeEventListener("resize", calculateOverflow);
+    }, [overflown]) // need to re-apply eventListener; see https://stackoverflow.com/questions/53845595/wrong-react-hooks-behaviour-with-event-listener
+
+
     return (
         <Box>
-            <Flex justify="center" gap="10px">
-                <Box textAlign="center" w="10">
-                    <Text visibility="hidden">Time Slots</Text>
-                    <Flex mt="-1" direction="column" minH="50vh">
-                        {
-                            timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
-                                <Box className="box-double" fontSize="10px" key={ind}>
-                                    {t}
+            <Box w="100%" overflowX="auto" ref={overflowRef}>
+                <Flex justify={overflown ? "unset" : "center"} gap="10px">
+                    <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"}>
+                        <Text visibility="hidden" h="14">Time Slots</Text>
+                        <Flex mt="-3" direction="column">
+                            {
+                                timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
+                                    <Box className="box-double" fontSize="10px" key={ind}>
+                                        {t}
+                                    </Box>
+                                ))
+                            }
+                        </Flex>
+                    </Box>
+                    {
+                        props.event.dates.map(v => (
+                            <Box textAlign="center" minW="10" w="10" key={v} mx={overflown ? "auto" : "unset"}>
+                                <Box h="14">
+                                    <Text>{getDateMonth(v)}</Text>
+                                    <Text>{getDateDay(v)}</Text>
                                 </Box>
-                            ))
-                        }
-                    </Flex>
-                </Box>
-                {
-                    props.event.dates.map(v => (
-                        <Box textAlign="center" w="10" key={v}>
-                            <Text>{getDate(v)}</Text>
-                            <Flex direction="column" minH="50vh">
-                                {
-                                    timeStops.map((t, ind) => (
-                                        <Box key={ind} backgroundColor={getColor(`${v} ${t}`)} className="box-shade" onMouseEnter={() => props.onMouseEnter(`${v} ${t}`, getTimeRangeStr(`${v} ${t}`, ind))} onMouseLeave={() => props.onMouseLeave(`${v} ${t}`)}>
-                                        </Box>
-                                    ))
-                                }
-                            </Flex>
-                        </Box>
-                    ))
-                }
-                <Box textAlign="center" w="10">
-
-                </Box>
-            </Flex>
+                                <Flex direction="column">
+                                    {
+                                        timeStops.map((t, ind) => (
+                                            <Box key={ind} backgroundColor={getColor(`${v} ${t}`)} className="box-shade" onMouseEnter={() => props.onMouseEnter(`${v} ${t}`, getTimeRangeStr(`${v} ${t}`, ind))} onMouseLeave={() => props.onMouseLeave(`${v} ${t}`)}>
+                                            </Box>
+                                        ))
+                                    }
+                                </Flex>
+                            </Box>
+                        ))
+                    }
+                    <Box textAlign="center" minW="10" w="10" mx={overflown ? "auto" : "unset"}>
+                    </Box>
+                </Flex>
+            </Box>
+            
             <Box h="20"></Box>
         </Box>
     )

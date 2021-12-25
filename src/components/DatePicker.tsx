@@ -1,6 +1,6 @@
-import * as React from "react"
-import { Box, Button, Flex, Grid, GridItem, IconButton, Text, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Grid, GridItem, IconButton, Text, useBreakpointValue, VStack } from "@chakra-ui/react"
 import moment from "moment"
+import { useEffect, useState } from "react"
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa"
 
 interface Day {
@@ -8,69 +8,16 @@ interface Day {
     day: number
 }
 
-export class DatePicker extends React.Component<{ selected: Array<string>,  onUpdate: (val: Array<string>) => void }, { days: Array<Day>, week: Array<string>, title: string}> {
-    today: string = moment().format('YYYY-MM-DD')
+export const DatePicker = (props: { selected: Array<string>, onUpdate: (val: Array<string>) => void }) => {
+    const buttonSize = useBreakpointValue({ base: 'sm', md: 'md'})
 
-    constructor(props: any) {
-        super(props)
-        this.state = {
-            days: [],
-            week: [],
-            title: ''
-        }
-    }
+    const today = moment().format('YYYY-MM-DD')
 
-    render() {
-        return (
-            <VStack spacing={6}>
-                <Grid templateColumns="repeat(7, 1fr)" gap={6}>
-                    <GridItem colSpan={7}>
-                        <Flex justifyContent="space-between" alignItems="center" w="100%">
-                            <Box>
-                                <IconButton colorScheme="teal" variant="ghost" icon={<FaChevronLeft />} aria-label="Previous Period" onClick={() => this.goPrev()} />
-                            </Box>
-                            <Box>
-                                <Text fontSize="lg">{this.state.title}</Text>
-                            </Box>
-                            <Box>
-                                <IconButton colorScheme="teal" variant="ghost" icon={<FaChevronRight />} aria-label="Next Period" onClick={() => this.goNext()} />
-                            </Box>
-                        </Flex>
-                    </GridItem>
-                    {this.state.week.map((v, ind) => (
-                        <Box key={ind} fontSize="md" textColor="teal.600" fontWeight="bold">{v}</Box>
-                    ))}
-                    {this.state.days.map((v, ind) => (
-                        <Button colorScheme="teal" variant={this.props.selected.includes(v.date) ? 'solid' : 'outline'} onClick={() => this.clickDate(v.date)} key={ind} textDecoration={v.date == this.today ? 'underline' : 'none'}>{v.day}</Button>
-                    ))}
-                </Grid>
-            </VStack>
-        )
-    }
+    const [days, setDays] = useState<Day[]>([])
+    const [week, setWeek] = useState<string[]>([])
+    const [title, setTitle] = useState<string>('')
 
-    clickDate(date: string) {
-        let i = this.props.selected.indexOf(date)
-        if (i != -1) {
-            this.props.onUpdate(this.props.selected.filter(v => v != date))
-        }
-        else {
-            this.props.onUpdate([...this.props.selected, date])
-        }
-    }
-
-    componentDidMount() {
-        this.generate(this.today)
-    }
-
-    goPrev() {
-        this.generate(moment(this.state.days[0].date).subtract(35, 'days').format('YYYY-MM-DD'))
-    }
-
-    goNext() {
-        this.generate(moment(this.state.days[0].date).add(35, 'days').format('YYYY-MM-DD'))
-    }
-
-    generate(anchorDate: string) {
+    const generate = (anchorDate: string) => {
         let weekday = moment(anchorDate, 'YYYY-MM-DD').weekday()
         let t = moment(anchorDate, 'YYYY-MM-DD').subtract(weekday, 'days')
         let days = []
@@ -85,10 +32,56 @@ export class DatePicker extends React.Component<{ selected: Array<string>,  onUp
         }
         let firstDay = moment(days[0].date, 'YYYY-MM-DD'), lastDay = moment(days[34].date, 'YYYY-MM-DD')
 
-        this.setState({
-            days: days,
-            week: week,
-            title: `${firstDay.format('MMM') + (firstDay.month() == 11 ? ' ' + firstDay.format('YYYY') : '')} to ${lastDay.format('MMM')} ${lastDay.format('YYYY')}`
-        })
+        setDays(days)
+        setWeek(week)
+        setTitle(`${firstDay.format('MMM') + (firstDay.month() == 11 ? ' ' + firstDay.format('YYYY') : '')} to ${lastDay.format('MMM')} ${lastDay.format('YYYY')}`)
     }
+
+    const prev = () => {
+        generate(moment(days[0].date).subtract(35, 'days').format('YYYY-MM-DD'))
+    }
+
+    const next = () => {
+        generate(moment(days[0].date).add(35, 'days').format('YYYY-MM-DD'))
+    }
+
+    const clickDate = (date: string) => {
+        let i = props.selected.indexOf(date)
+        if (i != -1) {
+            props.onUpdate(props.selected.filter(v => v != date))
+        }
+        else {
+            props.onUpdate([...props.selected, date])
+        }
+    }
+
+    useEffect(() => {
+        generate(today)
+    }, [])
+
+    return (
+        <VStack spacing={6}>
+            <Grid templateColumns="repeat(7, 1fr)" gap={[2, 4, 5]}>
+                <GridItem colSpan={7}>
+                    <Flex justifyContent="space-between" alignItems="center" w="100%">
+                        <Box>
+                            <IconButton colorScheme="teal" variant="ghost" icon={<FaChevronLeft />} aria-label="Previous Period" onClick={() => prev()} />
+                        </Box>
+                        <Box>
+                            <Text fontSize="lg">{title}</Text>
+                        </Box>
+                        <Box>
+                            <IconButton colorScheme="teal" variant="ghost" icon={<FaChevronRight />} aria-label="Next Period" onClick={() => next()} />
+                        </Box>
+                    </Flex>
+                </GridItem>
+                {week.map((v, ind) => (
+                    <Box key={ind} fontSize="md" textColor="teal.600" fontWeight="bold">{v}</Box>
+                ))}
+                {days.map((v, ind) => (
+                    <Button colorScheme="teal" size={buttonSize} variant={props.selected.includes(v.date) ? 'solid' : 'outline'} onClick={() => clickDate(v.date)} key={ind} textDecoration={v.date == today ? 'underline' : 'none'}>{v.day}</Button>
+                ))}
+            </Grid>
+        </VStack>
+    )
 }

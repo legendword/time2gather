@@ -6,7 +6,7 @@ import { interpolateColors } from "../util/colors"
 import leadingZeros from "../util/leadingZeros"
 
 
-export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string>, available: Array<string>, onSubmitEdit: (available: Array<string>) => void }) => {
+export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string>, times: Array<number>, available: Array<string>, onSubmitEdit: (available: Array<string>) => void }) => {
     const enableDrafts = props.allowEdits || props.available.length == 0;
     const [draftAvailable, setDraftAvailable] = useState<Array<string>>(props.available);
     const [draftTimes, setDraftTimes] = useState<Array<string>>([]);
@@ -17,13 +17,16 @@ export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string
         setHasEdited(false)
     }, [props.available])
 
-    const getDate = (date: string) => {
-        return moment(date, 'YYYY-MM-DD').format('MMM D')
+    const getDateMonth = (date: string) => {
+        return moment(date, 'YYYY-MM-DD').format('MMM')
+    }
+    const getDateDay = (date: string) => {
+        return moment(date, 'YYYY-MM-DD').format('D')
     }
     const intervalHours = 0, intervalMinutes = 30;
     const timeStops: Array<string> = [];
     const timeEnds: Array<string> = [];
-    for (let i = 0; i < 24; i += intervalHours + 1) {
+    for (let i = props.times[0]; i < props.times[1]; i += intervalHours + 1) {
         for (let j = 0; j < 60; j += intervalMinutes) {
             let beginTime = `${leadingZeros(i)}:${leadingZeros(j)}`;
             let endTime = `${leadingZeros(i)}:${leadingZeros(j+intervalMinutes-1)}`;
@@ -82,38 +85,42 @@ export const MyAvailability = (props: { allowEdits: boolean, dates: Array<string
 
     return (
         <Box>
-            <Flex justify="center" gap="10px">
-                <Box textAlign="center" w="10">
-                    <Text visibility="hidden">Time Slots</Text>
-                    <Flex mt="-1" direction="column" minH="50vh">
-                        {
-                            timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
-                                <Box className="box-double" fontSize="10px" key={ind}>
-                                    {t}
+            <Box w="100%" overflowX="auto">
+                <Flex gap="10px">
+                    <Box textAlign="center" minW="10" m="auto">
+                        <Text visibility="hidden" h="14">Time Slots</Text>
+                        <Flex mt="-3" direction="column">
+                            {
+                                timeStops.filter((v, ind) => ind % 2 == 0).map((t, ind) => (
+                                    <Box className="box-double" fontSize="10px" key={ind}>
+                                        {t}
+                                    </Box>
+                                ))
+                            }
+                        </Flex>
+                    </Box>
+                    {
+                        props.dates.map(v => (
+                            <Box textAlign="center" minW="10" m="auto" key={v}>
+                                <Box h="14">
+                                    <Text>{getDateMonth(v)}</Text>
+                                    <Text>{getDateDay(v)}</Text>
                                 </Box>
-                            ))
-                        }
-                    </Flex>
-                </Box>
-                {
-                    props.dates.map(v => (
-                        <Box textAlign="center" w="10" key={v}>
-                            <Text>{getDate(v)}</Text>
-                            <Flex direction="column" minH="50vh">
-                                {
-                                    timeStops.map((t, ind) => (
-                                        <Box bg={getColor(`${v} ${t}`)} className="box-shade" key={ind} onMouseOver={(ev) => mouseOver(ev, `${v} ${t}`)} onMouseDown={() => mouseDown(`${v} ${t}`)} onMouseUp={() => mouseUp()}>
-                                        </Box>
-                                    ))
-                                }
-                            </Flex>
-                        </Box>
-                    ))
-                }
-                <Box textAlign="center" w="10">
-
-                </Box>
-            </Flex>
+                                <Flex direction="column">
+                                    {
+                                        timeStops.map((t, ind) => (
+                                            <Box bg={getColor(`${v} ${t}`)} className="box-shade" key={ind} onMouseOver={(ev) => mouseOver(ev, `${v} ${t}`)} onMouseDown={() => mouseDown(`${v} ${t}`)} onMouseUp={() => mouseUp()}>
+                                            </Box>
+                                        ))
+                                    }
+                                </Flex>
+                            </Box>
+                        ))
+                    }
+                    <Box textAlign="center" minW="10" m="auto">
+                    </Box>
+                </Flex>
+            </Box>
             <Center mt={5}>
             {
                 (enableDrafts && hasEdited) ? (
