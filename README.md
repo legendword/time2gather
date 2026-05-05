@@ -1,59 +1,83 @@
-This project was bootstrapped with
-[Create React App](https://github.com/facebook/create-react-app).
+# time2gather
 
-## Available Scripts
+Open-source meeting time planning tool. Pick a few candidate dates, share the
+link, and have everyone mark when they're available — then read off the best
+overlap from a single chart.
 
-In the project directory, you can run:
+## Stack
 
-### `npm start`
+- **Frontend** — React 17 + TypeScript + Chakra UI (Create React App)
+- **Backend** — Node.js + Express + MongoDB
+- **Storage** — MongoDB
 
-Runs the app in the development mode.<br /> Open
-[http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Quick start
 
-The page will reload if you make edits.<br /> You will also see any lint errors
-in the console.
+Requires Docker + Docker Compose.
 
-### `npm test`
+```bash
+git clone https://github.com/legendword/time2gather.git
+cd time2gather
+docker compose up --build
+```
 
-Launches the test runner in the interactive watch mode.<br /> See the section
-about
-[running tests](https://facebook.github.io/create-react-app/docs/running-tests)
-for more information.
+Open <http://localhost:8080>.
 
-### `npm run build`
+To override the frontend host port or database name, copy `.env.example` to
+`.env` and edit it.
 
-Builds the app for production to the `build` folder.<br /> It correctly bundles
-React in production mode and optimizes the build for the best performance.
+## Project layout
 
-The build is minified and the filenames include the hashes.<br /> Your app is
-ready to be deployed!
+```
+time2gather/
+├── frontend/          React SPA (CRA)
+├── backend/           Express + MongoDB API
+├── docker-compose.yml mongo + backend + frontend
+└── .env.example       host port / db name overrides
+```
 
-See the section about
-[deployment](https://facebook.github.io/create-react-app/docs/deployment) for
-more information.
+## Configuration
 
-### `npm run eject`
+Environment variables read by the backend (set automatically by Docker Compose):
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+| Var         | Default                     | Notes                                  |
+| ----------- | --------------------------- | -------------------------------------- |
+| `MONGO_URI` | `mongodb://mongo:27017`     | MongoDB connection string              |
+| `MONGO_DB`  | `time2gather`               | Database name                          |
+| `PORT`      | `8000`                      | Backend HTTP port (inside container)   |
 
-If you aren’t satisfied with the build tool and configuration choices, you can
-`eject` at any time. This command will remove the single build dependency from
-your project.
+The frontend reads `REACT_APP_API_BASE_URL` at build time. Defaults to `/api`,
+which the bundled nginx proxies to the backend service. Override at build time
+to point the SPA at a different backend.
 
-Instead, it will copy all the configuration files and the transitive
-dependencies (webpack, Babel, ESLint, etc) right into your project so you have
-full control over them. All of the commands except `eject` will still work, but
-they will point to the copied scripts so you can tweak them. At this point
-you’re on your own.
+## Development without Docker
 
-You don’t have to ever use `eject`. The curated feature set is suitable for
-small and middle deployments, and you shouldn’t feel obligated to use this
-feature. However we understand that this tool wouldn’t be useful if you couldn’t
-customize it when you are ready for it.
+```bash
+# Terminal 1 — start MongoDB however you like (or just `docker compose up mongo`)
 
-## Learn More
+# Terminal 2 — backend
+cd backend
+npm install
+MONGO_URI=mongodb://localhost:27017 node time2gather.js
 
-You can learn more in the
-[Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Terminal 3 — frontend
+cd frontend
+npm install
+REACT_APP_API_BASE_URL=http://localhost:8000 npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## API
+
+All routes are mounted at the backend root (or under `/api/` when going through
+the bundled frontend nginx).
+
+- `GET /` — health check
+- `POST /` — create event
+  - body: `{ title, dates, times, allowEdits }`
+  - returns: `{ success, eventId }`
+- `GET /:eventId` — fetch event
+- `POST /:eventId` — add or update an attendee's availability
+  - body: `{ name, available }`
+
+## License
+
+See repository.

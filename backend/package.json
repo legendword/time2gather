@@ -1,0 +1,16 @@
+{
+  "name": "time2gather-backend",
+  "version": "1.0.0",
+  "description": "Backend for time2gather",
+  "main": "time2gather.js",
+  "scripts": {
+    "start": "node time2gather.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
