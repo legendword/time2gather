@@ -1,7 +1,7 @@
 {
   "name": "time2gather",
   "version": "1.0.0",
-  "homepage": "/time2gather/",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@chakra-ui/icons": "^1.1.1",

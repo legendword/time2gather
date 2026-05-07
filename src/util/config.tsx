@@ -1,1 +1,0 @@
-export const baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3010/api' : 'https://analycube.com/api/time2gather';
